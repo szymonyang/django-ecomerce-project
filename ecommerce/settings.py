@@ -120,4 +120,16 @@ USE_TZ = True
 
 STATIC_URL = "/static/"
 
-STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
+# The absolute path to the directory where collectstatic will collect static files for deployment.
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+
+# Manageing static files:
+# https://docs.djangoproject.com/en/3.0/howto/static-files/#managing-static-files-e-g-images-javascript-css
+# Static files are meant for javascript/images etc, but media files are for user-uploaded content.
+#https://stackoverflow.com/a/5016626/6672398
+# STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
+
+MEDIA_URL = "/media/"
+
+MEDIA_ROOT = os.path.join(BASE_DIR, "mediafiles")
+
