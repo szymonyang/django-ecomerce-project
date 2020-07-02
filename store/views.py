@@ -1,6 +1,7 @@
-from django.http import HttpRequest
+from django.http import HttpRequest, JsonResponse
 from django.shortcuts import render
 from django.views import View
+
 from store.models import Product, Order
 
 
@@ -53,3 +54,7 @@ def checkout(request):
 
     context = {'items': items, 'order': order, 'cartItems': cartItems}
     return render(request, "store/checkout.html", context)
+
+
+def updateItem(request):
+    return JsonResponse("Item was added", safe=False)
