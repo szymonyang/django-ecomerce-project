@@ -8,9 +8,20 @@ from store.models import Product, Order, OrderItem
 
 
 def store(request):
+    if request.user.is_authenticated:
+        customer = request.user.customer
+        order, created = Order.objects.get_or_create(customer=customer, is_complete=False)
+        items = order.orderitem_set.all()
+        cartItems = order.get_cart_items
+    else:
+        # Create empty cart for now for non-logged in user
+        items = []
+        order = {'get_cart_total': 0, 'get_cart_items': 0}
+        cartItems = order['get_cart_items']
+
     products = Product.objects.all()
-    context = {"products": products}
-    return render(request, "store/store.html", context)
+    context = {'products': products, 'cartItems': cartItems}
+    return render(request, 'store/store.html', context)
 
 
 def cart(request):
@@ -68,12 +79,11 @@ def updateItem(request):
 
     customer = request.user.customer
     product = Product.objects.get(id=productId)
-    # TODO: Dangerous
-    order, created = Order.objects.get_or_create(customer=customer, complete=False)
+    # TODO: Dangerous. No exception handling
+    # TODO: Handle multiple order
+    order, created = Order.objects.get_or_create(customer=customer, is_complete=False)
     # TODO: Dangerous
     orderItem, created = OrderItem.objects.get_or_create(order=order, product=product)
-
-
     if action == 'add':
         orderItem.quantity = (orderItem.quantity + 1)
     elif action == 'remove':
