@@ -68,14 +68,15 @@
     </div>
 
     <script>
-        const total = "{{ total.get_cart_total }}"
+        const total = "{{ order.get_cart_total }}"
+        console.log("total what the fuck why not show:", total)
         if (user !== "AnonymousUser") {
             document.getElementById("user-info").innerHTML = ""
             // hide entire form if user is logged in
-            document.getElementById("form-wrapper").classList.add("hidden")
+            {#document.getElementById("form-wrapper").classList.add("hidden")#}
             // show payment
-            document.getElementById("payment-info")
-            document.getElementById("payment-info").classList.remove("hidden")
+            {#document.getElementById("payment-info")#}
+            {#document.getElementById("payment-info").classList.remove("hidden")#}
         }
 
 
@@ -109,8 +110,31 @@
                 userFormData.email = form.email.value
             }
 
+            shippingInfo.address = form.address.value
+            shippingInfo.city = form.city.value
+            shippingInfo.state = form.state.value
+            shippingInfo.zipcode = form.zipcode.value
+
+
             console.log('Shipping Info:', shippingInfo)
             console.log('User Info:', userFormData)
+
+            const url = "/process_order/"
+            fetch(url, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": csrftoken
+                },
+                body: JSON.stringify({'form': userFormData, 'shipping': shippingInfo})
+            }).then((response) => response.json())
+                .then((data) => {
+                    console.log("Success:", data);
+                    alert("Transaction completed");
+                    // redirect the user to homepage
+                    window.location.href = "{% url 'store' %}"
+                })
         }
+
     </script>
 {% endblock content %}

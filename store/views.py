@@ -4,7 +4,7 @@ from django.http import HttpRequest, JsonResponse
 from django.shortcuts import render
 from django.views import View
 
-from store.models import Product, Order, OrderItem
+from store.models import Product, Order, OrderItem, ShippingAddress
 
 
 def store(request):
@@ -95,3 +95,30 @@ def updateItem(request):
         orderItem.delete()
 
     return JsonResponse('Item was added', safe=False)
+
+
+def processOrder(request):
+    # Should restrict to POST only
+    data = json.loads(request.body)
+    if request.user.is_authenticated:
+        # TODO: Why 1to1 field (maybe the reverese lookup)
+        customer = request.user.customer
+        # print(request.user.customer)
+        # Handle multiple order
+        order, _ = Order.objects.get_or_create(customer=customer, is_complete=False)
+        total = float(data['form']['total'])
+        if total == order.get_cart_total:
+            order.complete = True
+            order.save()
+
+        ShippingAddress.objects.create(
+            order=order,
+            address=data["shipping"]["address"],
+            city=data["shipping"]["city"],
+            state=data["shipping"]["state"],
+            zipcode=data["shipping"]["zipcode"],
+        )
+    else:
+        print("User is not logged in")
+
+    return JsonResponse('Payment submitted..', safe=False)
