@@ -1,10 +1,12 @@
 import json
 
+from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpRequest, JsonResponse
 from django.shortcuts import render
 from django.views import View
 
 from store.models import Product, Order, OrderItem, ShippingAddress
+from store.utils import cookieCart
 
 
 def store(request):
@@ -31,24 +33,61 @@ def cart(request):
         items = order.orderitem_set.all()
         cartItems = order.get_cart_items
     else:
+        print("cookie:", request.COOKIES)
+        try:
+            cart_from_cookie = json.loads(request.COOKIES["cart"])
+        except KeyError:
+            cart_from_cookie = {}
+
         # Create empty cart for now for non-logged in user
         items = []
-        order = {'get_cart_total': 0, 'get_cart_items': 0, 'shipping': False}
-        cartItems = order['get_cart_items']
+        order = {"get_cart_total": 0, "get_cart_items": 0}
+        cartItems = order["get_cart_items"]
+        for i in cart_from_cookie:
+            try:
+                cartItems += cart_from_cookie[i]['quantity']
+                product = Product.objects.get(id=i)
 
-    context = {'items': items, 'order': order, 'cartItems': cartItems}
-    return render(request, 'store/cart.html', context)
+                total = (product.price * cart_from_cookie[i]['quantity'])
+
+                order['get_cart_total'] += total
+                order['get_cart_items'] += cart_from_cookie[i]['quantity']
+
+                item = {
+                    'id': product.id,
+                    'product': {'id': product.id, 'name': product.name, 'price': product.price,
+                                'imageURL': product.image_url}, 'quantity': cart_from_cookie[i]['quantity'],
+                    'digital': product.is_digital, 'get_total': total,
+                }
+                items.append(item)
+            except ObjectDoesNotExist:
+                print(f"item id: {i} does not exist.")
+
+    context = {"items": items, "order": order, "cartItems": cartItems}
+    print("context:", context)
+    return render(request, "store/cart.html", context)
 
 
 class CartView(View):
     def get(self, request: HttpRequest):
+        print(request.COOKIES)
         if request.user.is_authenticated:
             customer = request.user.customer
             # Todo: Should consider a user might have multiple order
             order = Order.objects.get(customer=customer)
             items = order.order_item.all()
         else:
+            # Create empty cart for now for non-logged in user
+            try:
+                cart = json.loads(request.COOKIES["cart"])
+            except:
+                cart = {}
+                print("CART:", cart)
+
             items = []
+            order = {"get_cart_total": 0, "get_cart_items": 0}
+            cartItems = order["get_cart_items"]
+
         context = {"items": items}
         return render(request, "store/cart.html", context)
 
