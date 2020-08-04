@@ -2,7 +2,7 @@ import json
 
 from django.core.exceptions import ObjectDoesNotExist
 
-from store.models import Product
+from store.models import Product, Order
 
 
 def cookieCart(request):
@@ -10,10 +10,12 @@ def cookieCart(request):
         cart_from_cookie = json.loads(request.COOKIES["cart"])
     except KeyError:
         cart_from_cookie = {}
+
     items = []
     order = {"get_cart_total": 0, "get_cart_items": 0}
-    cartItems = order["get_cart_items"]
-    for i in cart_from_cookie:
+    cartItems = 0
+
+    for i in cart_from_cookie.keys():
         try:
             cartItems += cart_from_cookie[i]['quantity']
             product = Product.objects.get(id=i)
@@ -35,3 +37,18 @@ def cookieCart(request):
             pass
     context = {"items": items, "order": order, "cartItems": cartItems}
     return context
+
+
+def cartData(request):
+    if request.user.is_authenticated:
+        customer = request.user.customer
+        order, created = Order.objects.get_or_create(customer=customer, complete=False)
+        items = order.orderitem_set.all()
+        cartItems = order.get_cart_items
+    else:
+        cookieData = cookieCart(request)
+        cartItems = cookieData['cartItems']
+        order = cookieData['order']
+        items = cookieData['items']
+
+    return {'cartItems': cartItems, 'order': order, 'items': items}

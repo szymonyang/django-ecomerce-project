@@ -13,13 +13,11 @@ def store(request):
     if request.user.is_authenticated:
         customer = request.user.customer
         order, created = Order.objects.get_or_create(customer=customer, is_complete=False)
-        items = order.orderitem_set.all()
+        # items = order.orderitem_set.all()
         cartItems = order.get_cart_items
     else:
-        # Create empty cart for now for non-logged in user
-        items = []
-        order = {'get_cart_total': 0, 'get_cart_items': 0}
-        cartItems = order['get_cart_items']
+        cookieData = cookieCart(request)
+        cartItems = cookieData['cartItems']
 
     products = Product.objects.all()
     context = {'products': products, 'cartItems': cartItems}
@@ -33,35 +31,10 @@ def cart(request):
         items = order.orderitem_set.all()
         cartItems = order.get_cart_items
     else:
-        print("cookie:", request.COOKIES)
-        try:
-            cart_from_cookie = json.loads(request.COOKIES["cart"])
-        except KeyError:
-            cart_from_cookie = {}
-
-        # Create empty cart for now for non-logged in user
-        items = []
-        order = {"get_cart_total": 0, "get_cart_items": 0}
-        cartItems = order["get_cart_items"]
-        for i in cart_from_cookie:
-            try:
-                cartItems += cart_from_cookie[i]['quantity']
-                product = Product.objects.get(id=i)
-
-                total = (product.price * cart_from_cookie[i]['quantity'])
-
-                order['get_cart_total'] += total
-                order['get_cart_items'] += cart_from_cookie[i]['quantity']
-
-                item = {
-                    'id': product.id,
-                    'product': {'id': product.id, 'name': product.name, 'price': product.price,
-                                'imageURL': product.image_url}, 'quantity': cart_from_cookie[i]['quantity'],
-                    'digital': product.is_digital, 'get_total': total,
-                }
-                items.append(item)
-            except ObjectDoesNotExist:
-                print(f"item id: {i} does not exist.")
+        cookieData = cookieCart(request)
+        cartItems = cookieData["cartItems"]
+        order = cookieData["order"]
+        items = cookieData["items"]
 
     context = {"items": items, "order": order, "cartItems": cartItems}
     print("context:", context)
@@ -99,10 +72,10 @@ def checkout(request):
         items = order.orderitem_set.all()
         cartItems = order.get_cart_items
     else:
-        # Create empty cart for now for non-logged in user
-        items = []
-        order = {'get_cart_total': 0, 'get_cart_items': 0, 'shipping': False}
-        cartItems = order['get_cart_items']
+        cookieData = cookieCart(request)
+        cartItems = cookieData["cartItems"]
+        order = cookieData["order"]
+        items = cookieData["items"]
 
     context = {'items': items, 'order': order, 'cartItems': cartItems}
     return render(request, "store/checkout.html", context)
