@@ -5,8 +5,8 @@ from django.http import HttpRequest, JsonResponse
 from django.shortcuts import render
 from django.views import View
 
-from store.models import Product, Order, OrderItem, ShippingAddress
-from store.utils import cookieCart, cartData
+from store.models import Product, Order, OrderItem, ShippingAddress, Customer
+from store.utils import cookieCart, cartData, guestOrder
 
 
 def store(request):
@@ -102,6 +102,7 @@ def processOrder(request):
         # Handle multiple order
         order, _ = Order.objects.get_or_create(customer=customer, is_complete=False)
         total = float(data['form']['total'])
+        # WHy? check if total has been moofified fron frontend
         if total == order.get_cart_total:
             order.complete = True
             order.save()
@@ -115,5 +116,21 @@ def processOrder(request):
         )
     else:
         print("User is not logged in")
+        print('COOKIES:', request.COOKIES)
+        customer, order = guestOrder(request, data)
 
-    return JsonResponse('Payment submitted..', safe=False)
+        total = float(data['form']['total'])
+
+        if total == order.get_cart_total:
+            order.complete = True
+        order.save()
+
+        ShippingAddress.objects.create(
+            order=order,
+            address=data['shipping']['address'],
+            city=data['shipping']['city'],
+            state=data['shipping']['state'],
+            zipcode=data['shipping']['zipcode'],
+        )
+
+        return JsonResponse('Payment submitted..', safe=False)

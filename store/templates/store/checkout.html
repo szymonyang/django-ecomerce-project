@@ -131,6 +131,11 @@
                 .then((data) => {
                     console.log("Success:", data);
                     alert("Transaction completed");
+
+                    // Clear cookies
+                    cart = {}
+                    document.cookie = 'cart=' + JSON.stringify(cart) + ";domain=;path=/"
+
                     // redirect the user to homepage
                     window.location.href = "{% url 'store' %}"
                 })
