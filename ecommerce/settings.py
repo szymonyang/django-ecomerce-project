@@ -11,10 +11,10 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 
 import os
+import django_heroku
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
@@ -26,7 +26,6 @@ SECRET_KEY = 'p$1#+ufq*q3jx27*y-o^6n1h$e3@y@@3q3&9f8ivh(gv0!_0y%'
 DEBUG = True
 
 ALLOWED_HOSTS = []
-
 
 # Application definition
 
@@ -42,6 +41,8 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    # http://whitenoise.evans.io/en/stable/django.html
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -70,7 +71,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "ecommerce.wsgi.application"
 
-
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
@@ -80,7 +80,6 @@ DATABASES = {
         "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
@@ -100,7 +99,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/3.0/topics/i18n/
 
@@ -114,7 +112,6 @@ USE_L10N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
@@ -126,10 +123,17 @@ STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 # Manageing static files:
 # https://docs.djangoproject.com/en/3.0/howto/static-files/#managing-static-files-e-g-images-javascript-css
 # Static files are meant for javascript/images etc, but media files are for user-uploaded content.
-#https://stackoverflow.com/a/5016626/6672398
+# https://stackoverflow.com/a/5016626/6672398
 # STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
+
+# Simplified static file serving.
+# https://warehouse.python.org/project/whitenoise/
+
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 MEDIA_URL = "/media/"
 
 MEDIA_ROOT = os.path.join(BASE_DIR, "mediafiles")
 
+# Activate Django-Heroku.
+django_heroku.settings(locals())
