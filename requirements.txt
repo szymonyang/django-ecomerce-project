@@ -7,3 +7,12 @@ Markdown==3.2.2
 pytz==2020.1
 sqlparse==0.3.1
 zipp==3.1.0
+
+# for deployment
+whitenoise # serve static files
+setuptools
+pip
+gunicorn # host wsgi procrese
+django-heroku
+dj-database-url
+psycopg2
