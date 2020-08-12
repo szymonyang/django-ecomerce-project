@@ -9,10 +9,11 @@ PLACEHOLDER_PATH = "/media/images/placeholder.png"
 class Customer(models.Model):
     user = models.OneToOneField(User, null=True, blank=True, on_delete=models.CASCADE)
     email = models.EmailField(unique=True)
-    name = models.CharField(max_length=50, null=True)
+    first_name = models.CharField(max_length=50, null=True)
+    last_name = models.CharField(max_length=50, null=True)
 
     def __str__(self):
-        return f"Customer id: {self.id}, name: {self.name}"
+        return f"Customer id: {self.id}, name: {self.first_name}"
 
 
 class Product(models.Model):
@@ -20,7 +21,7 @@ class Product(models.Model):
     quantity = models.IntegerField(default=0, null=True, blank=True)
     price = models.DecimalField(max_digits=8, decimal_places=2)
     is_digital = models.BooleanField(default=False, null=True, blank=True)
-    image = models.ImageField(upload_to="images/")
+    image = models.ImageField(upload_to="images/", null=True, blank=True)
 
     def __str__(self):
         return f"Product id: {self.id}, name: {self.name}"
