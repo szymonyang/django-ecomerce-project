@@ -1,1 +1,1 @@
-web: web: python manage.py collectstatic; gunicorn ecommerce.wsgi --log-file - --log-level debug
+web: python manage.py collectstatic; gunicorn ecommerce.wsgi --log-file - --log-level debug
