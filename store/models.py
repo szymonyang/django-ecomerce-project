@@ -3,7 +3,7 @@ import uuid
 from django.db import models
 from django.contrib.auth.models import User
 
-PLACEHOLDER_PATH = "/media/images/placeholder.png"
+PLACEHOLDER_PATH = "/store/images/placeholder.png"
 
 
 class Customer(models.Model):
